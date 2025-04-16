@@ -1,0 +1,13 @@
+# 指定目标
+.local/*
+.taskfile/.env
+
+# 后缀类型
+**/*.log
+**/.DS_Store
+
+# 临时目录
+**/tmp/**
+**/temp/**
+**/logs/**
+**/cache/**

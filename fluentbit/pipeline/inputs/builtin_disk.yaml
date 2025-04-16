@@ -1,0 +1,6 @@
+# pipeline:
+#   inputs:
+#     - name: disk
+#       tag: builtin_disk
+#       interval_sec: 1
+#       interval_nsec: 0

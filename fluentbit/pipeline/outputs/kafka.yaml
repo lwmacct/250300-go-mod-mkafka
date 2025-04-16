@@ -1,0 +1,27 @@
+pipeline:
+  outputs:
+    - name: kafka
+      match: "*"
+      # 移除重复配置，仅使用rdkafka.bootstrap.servers
+      brokers: ${RDKAFKA_BOOTSTRAP_SERVERS}
+      topics: ${RDKAFKA_TOPIC}
+
+      # https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+      rdkafka.security.protocol: ${RDKAFKA_SECURITY_PROTOCOL}
+      rdkafka.bootstrap.servers: "${RDKAFKA_BOOTSTRAP_SERVERS}"
+      rdkafka.client.id: ${RDKAFKA_CLIENT_ID}
+      rdkafka.sasl.mechanism: ${RDKAFKA_SASL_MECHANISM}
+      rdkafka.sasl.username: ${RDKAFKA_SASL_USERNAME}
+      rdkafka.sasl.password: ${RDKAFKA_SASL_PASSWORD}
+      rdkafka.allow.auto.create.topics: false
+      rdkafka.request.required.acks: 1
+      rdkafka.log.connection.close: false
+      rdkafka.enable.ssl.certificate.verification: false
+
+      # 调整debug级别，全部日志可能太多
+      rdkafka.debug: all
+      rdkafka.log_level: 7
+
+      # 无限重试
+      retry_limit: false
+      storage.total_limit_size: 10G
