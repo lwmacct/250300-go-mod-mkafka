@@ -1,4 +1,4 @@
-module github.com/lwmacct/250300-go-app-demo
+module github.com/lwmacct/250300-go-mod-mkafka
 
 go 1.24.0
 
