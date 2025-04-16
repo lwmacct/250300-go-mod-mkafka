@@ -1,0 +1,4 @@
+# pipeline:
+#   inputs:
+#     - name: mem
+#       tag: builtin_mem

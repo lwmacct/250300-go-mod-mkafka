@@ -1,0 +1,28 @@
+# https://taskfile.dev
+
+version: "3"
+dotenv: [".env", ".taskfile/.env", "{{.HOME}}/.env", ".taskfile/.env.template"]
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true
+
+  install:
+    cmds:
+      - curl https://raw.githubusercontent.com/fluent/fluent-bit/master/install.sh | sh
+
+  run:
+    silent: true
+    cmds:
+      - /opt/fluent-bit/bin/fluent-bit -c config.yaml
+
+  # 重载 fluentbit
+  reload:
+    silent: true
+    cmds:
+      - kill -SIGHUP $(pgrep -f fluent-bit)

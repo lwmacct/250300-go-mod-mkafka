@@ -1,0 +1,12 @@
+# https://docs.fluentbit.io/manual
+
+service:
+  hot_reload: on
+  # log_level: debug
+  storage.path: ${FLB_STORAGE_PATH}
+  storage.checksum: on
+  storage.sync: full
+
+includes:
+  - pipeline/inputs/*
+  - pipeline/outputs/*

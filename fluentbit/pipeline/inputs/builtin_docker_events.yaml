@@ -1,0 +1,5 @@
+# pipeline:
+#   inputs:
+#     - name: docker_events
+#       tag: builtin_docker_events
+#       threaded: true

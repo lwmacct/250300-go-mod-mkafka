@@ -1,0 +1,5 @@
+pipeline:
+  inputs:
+    - name: cpu
+      tag: builtin_cpu
+      storage.type: filesystem

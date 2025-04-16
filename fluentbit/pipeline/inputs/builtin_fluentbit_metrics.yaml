@@ -1,0 +1,5 @@
+# pipeline:
+#   inputs:
+#     - name: fluentbit_metrics
+#       tag: builtin_fluentbit_metrics
+#       scrape_interval: 2
