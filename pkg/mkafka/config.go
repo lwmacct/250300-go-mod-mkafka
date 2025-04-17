@@ -32,15 +32,16 @@ func (c *Config) Err() error {
 
 func (c *Config) WriterAsync() *kafka.Writer {
 	return &kafka.Writer{
-		Topic:                  c.Topic,
-		Addr:                   kafka.TCP(c.Brokers...),
-		Transport:              c.Transport(),
-		Balancer:               &kafka.LeastBytes{},
-		BatchSize:              10000,
-		BatchTimeout:           10 * time.Second,
-		RequiredAcks:           kafka.RequireOne,
-		Async:                  true,
-		Completion:             c.Callback,
+		Topic:        c.Topic,
+		Addr:         kafka.TCP(c.Brokers...),
+		Transport:    c.Transport(),
+		Balancer:     &kafka.LeastBytes{},
+		BatchSize:    1000,
+		BatchTimeout: 10 * time.Second,
+		RequiredAcks: kafka.RequireOne,
+		Async:        true,
+		Completion:   c.Callback,
+
 		AllowAutoTopicCreation: false,
 	}
 }
