@@ -41,6 +41,6 @@ func (c *Config) WriterAsync() *kafka.Writer {
 		RequiredAcks:           kafka.RequireOne,
 		Async:                  true,
 		Completion:             c.Callback,
-		AllowAutoTopicCreation: true,
+		AllowAutoTopicCreation: false,
 	}
 }
