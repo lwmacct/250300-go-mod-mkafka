@@ -17,7 +17,7 @@ type Config struct {
 	Callback func(messages []kafka.Message, err error)
 }
 
-func (c *Config) ScramSHA256() *kafka.Transport {
+func (c *Config) Transport() *kafka.Transport {
 	mechanism, _ := scram.Mechanism(
 		scram.SHA256,
 		c.Username,
@@ -34,7 +34,7 @@ func (c *Config) WriterAsync() *kafka.Writer {
 	return &kafka.Writer{
 		Topic:                  c.Topic,
 		Addr:                   kafka.TCP(c.Brokers...),
-		Transport:              c.ScramSHA256(),
+		Transport:              c.Transport(),
 		Balancer:               &kafka.LeastBytes{},
 		BatchSize:              10000,
 		BatchTimeout:           10 * time.Second,
