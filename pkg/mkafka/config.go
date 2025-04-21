@@ -1,7 +1,6 @@
 package mkafka
 
 import (
-	"sync"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -9,8 +8,7 @@ import (
 )
 
 type Config struct {
-	err  error
-	once sync.Once
+	err error
 
 	Brokers  []string `json:"brokers"`
 	Topic    string   `json:"topic"`
@@ -65,34 +63,32 @@ func (c *Config) DisableAsync() *Config {
 	return c
 }
 
-func (c *Config) init() {
-	c.once.Do(func() {
+// 设置默认值
+func (c *Config) defaluts() {
+	// 默认值
+	if c.BatchSize == 0 {
+		c.BatchSize = 100
+	}
 
-		// 默认值
-		if c.BatchSize == 0 {
-			c.BatchSize = 100
-		}
+	// 默认值
+	if c.BatchTimeout == 0 {
+		c.BatchTimeout = 1 * time.Second
+	}
 
-		// 默认值
-		if c.BatchTimeout == 0 {
-			c.BatchTimeout = 1 * time.Second
-		}
+	// 如果 MaxWait 为 0，则设置为 10 * time.Second
+	if c.MaxWait == 0 {
+		c.MaxWait = 10 * time.Second
+	}
 
-		// 如果 MaxWait 为 0，则设置为 10 * time.Second
-		if c.MaxWait == 0 {
-			c.MaxWait = 10 * time.Second
-		}
-
-		// 如果 DisableAsync 为 false，则设置为 true
-		if !c.disableAsync {
-			c.isAsync = true
-		}
-	})
+	// 如果 DisableAsync 为 false，则设置为 true
+	if !c.disableAsync {
+		c.isAsync = true
+	}
 }
 
 // 返回一个kafka.Writer
 func (c *Config) NewWriter() *kafka.Writer {
-	c.init()
+	c.defaluts()
 	return &kafka.Writer{
 		Balancer:     &kafka.LeastBytes{},
 		RequiredAcks: kafka.RequireOne,
@@ -112,7 +108,7 @@ func (c *Config) NewWriter() *kafka.Writer {
 
 // 返回一个kafka.Reader
 func (c *Config) NewReader() *kafka.Reader {
-	c.init()
+	c.defaluts()
 	return kafka.NewReader(kafka.ReaderConfig{
 		Brokers:     c.Brokers,
 		Topic:       c.Topic,
