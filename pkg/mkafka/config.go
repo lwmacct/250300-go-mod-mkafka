@@ -133,8 +133,12 @@ func (t *Config) NewReader() *kafka.Reader {
 		GroupID:  t.GroupID,
 		MinBytes: 1,
 		MaxBytes: 10e6,
-		MaxWait:  10 * time.Second,
-		Dialer:   &kafka.Dialer{Timeout: 10 * time.Second},
+		MaxWait:  t.MaxWait,
+		Dialer: &kafka.Dialer{
+			Timeout:       t.MaxWait,
+			DualStack:     true,
+			SASLMechanism: t.Transport().SASL,
+		},
 	})
 	return r
 }
