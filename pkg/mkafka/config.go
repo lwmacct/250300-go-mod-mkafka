@@ -17,7 +17,8 @@ type Config struct {
 	Password string   `json:"password"`
 
 	// 读取参数
-	MaxWait time.Duration `json:"max_wait"`
+	MaxWait        time.Duration `json:"max_wait"`
+	CommitInterval time.Duration `json:"commit_interval"`
 
 	// 写入参数
 	Completion             func(messages []kafka.Message, err error)
@@ -34,65 +35,80 @@ type Config struct {
 	LogErrFunc func(msg string, args ...interface{})
 }
 
-// 设置主题
+// 通用参数, 设置主题
 func (t *Config) SetTopic(topic string) *Config {
 	t.Topic = topic
 	return t
 }
 
-// 设置消费者组ID
+// 写入参数, 设置批量写入大小, 超过该大小会自动写入, 默认 100
+func (t *Config) SetBatchSize(batchSize int) *Config {
+	t.BatchSize = batchSize
+	return t
+}
+
+// 写入参数, 设置批量写入超时时间, 超过该时间会自动写入, 默认 1 秒
+func (t *Config) SetBatchTimeout(batchTimeout time.Duration) *Config {
+	t.BatchTimeout = batchTimeout
+	return t
+}
+
+// 写入参数, 设置同步写入, 默认异步写入
+func (t *Config) SetDisableAsync() *Config {
+	t.disableAsync = true
+	return t
+}
+
+// 读取参数, 设置消费者组ID
 func (t *Config) SetGroupID(groupID string) *Config {
 	t.GroupID = groupID
 	return t
 }
 
-// 设置批量写入大小, 超过该大小会自动写入, 默认 100
-func (c *Config) SetBatchSize(batchSize int) *Config {
-	c.BatchSize = batchSize
-	return c
+// 读取参数, 设置提交间隔时间, 默认 1 秒
+func (t *Config) SetCommitInterval(commitInterval time.Duration) *Config {
+	t.CommitInterval = commitInterval
+	return t
 }
 
-// 设置批量写入超时时间, 超过该时间会自动写入, 默认 1 秒
-func (c *Config) SetBatchTimeout(batchTimeout time.Duration) *Config {
-	c.BatchTimeout = batchTimeout
-	return c
-}
-
-func (c *Config) DisableAsync() *Config {
-	c.disableAsync = true
-	return c
+// 读取参数, 默认 10 秒
+func (t *Config) SetMaxWait(maxWait time.Duration) *Config {
+	t.MaxWait = maxWait
+	return t
 }
 
 // 设置默认值
-func (c *Config) defaluts() {
+func (t *Config) defaluts() {
 	// 默认值
-	if c.BatchSize == 0 {
-		c.BatchSize = 100
+	if t.BatchSize == 0 {
+		t.BatchSize = 100
 	}
 
 	// 默认值
-	if c.BatchTimeout == 0 {
-		c.BatchTimeout = 1 * time.Second
+	if t.BatchTimeout == 0 {
+		t.BatchTimeout = 1 * time.Second
 	}
 
 	// 如果 MaxWait 为 0，则设置为 10 * time.Second
-	if c.MaxWait == 0 {
-		c.MaxWait = 10 * time.Second
+	if t.MaxWait == 0 {
+		t.MaxWait = 10 * time.Second
 	}
 
 	// 如果 DisableAsync 为 false，则设置为 true
-	if !c.disableAsync {
-		c.isAsync = true
+	if t.disableAsync {
+		t.isAsync = false
+	} else {
+		t.isAsync = true
 	}
 
-	if c.LogStdFunc == nil {
-		c.LogStdFunc = kafka.LoggerFunc(func(msg string, args ...interface{}) {
+	if t.LogStdFunc == nil {
+		t.LogStdFunc = kafka.LoggerFunc(func(msg string, args ...interface{}) {
 			// 什么都不做
 		})
 	}
 
-	if c.LogErrFunc == nil {
-		c.LogErrFunc = kafka.LoggerFunc(func(msg string, args ...interface{}) {
+	if t.LogErrFunc == nil {
+		t.LogErrFunc = kafka.LoggerFunc(func(msg string, args ...interface{}) {
 			// 什么都不做
 		})
 	}
@@ -129,11 +145,12 @@ func (t *Config) NewReader() *kafka.Reader {
 		Logger:      kafka.LoggerFunc(t.LogStdFunc),
 		ErrorLogger: kafka.LoggerFunc(t.LogErrFunc),
 
-		Brokers:  t.Brokers,
-		GroupID:  t.GroupID,
-		MinBytes: 1,
-		MaxBytes: 10e6,
-		MaxWait:  t.MaxWait,
+		Brokers:        t.Brokers,
+		GroupID:        t.GroupID,
+		MinBytes:       1,
+		MaxBytes:       10e6,
+		MaxWait:        t.MaxWait,
+		CommitInterval: t.CommitInterval,
 		Dialer: &kafka.Dialer{
 			Timeout:       t.MaxWait,
 			DualStack:     true,
