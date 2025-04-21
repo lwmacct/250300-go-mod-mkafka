@@ -18,21 +18,37 @@ type Config struct {
 	Username string   `json:"username"`
 	Password string   `json:"password"`
 
-	// 杂项
+	// 读取参数
 	MaxWait time.Duration `json:"max_wait"`
 
-	// 写入消息
+	// 写入参数
 	Completion             func(messages []kafka.Message, err error)
 	BatchSize              int           `json:"batch_size"`
 	BatchTimeout           time.Duration `json:"batch_timeout"`
 	AllowAutoTopicCreation bool          `json:"allow_auto_topic_creation"`
-	DisableAsync           bool          `json:"disable_async"`
 
-	async bool
+	// 内部参数
+	disableAsync bool
+	isAsync      bool
 
 	// 日志回调
 	LogStdFunc func(msg string, args ...interface{})
 	LogErrFunc func(msg string, args ...interface{})
+}
+
+func (t *Config) SetTopic(topic string) *Config {
+	t.Topic = topic
+	return t
+}
+
+func (t *Config) SetGroupID(groupID string) *Config {
+	t.GroupID = groupID
+	return t
+}
+
+func (c *Config) DisableAsync() *Config {
+	c.disableAsync = true
+	return c
 }
 
 func (c *Config) init() {
@@ -54,8 +70,8 @@ func (c *Config) init() {
 		}
 
 		// 如果 DisableAsync 为 false，则设置为 true
-		if !c.DisableAsync {
-			c.DisableAsync = true
+		if !c.disableAsync {
+			c.isAsync = true
 		}
 	})
 }
@@ -68,7 +84,7 @@ func (c *Config) NewWriter() *kafka.Writer {
 		RequiredAcks: kafka.RequireOne,
 		Addr:         kafka.TCP(c.Brokers...),
 
-		Async:                  c.async,
+		Async:                  c.isAsync,
 		Logger:                 kafka.LoggerFunc(c.LogStdFunc),
 		ErrorLogger:            kafka.LoggerFunc(c.LogErrFunc),
 		Transport:              c.Transport(),
