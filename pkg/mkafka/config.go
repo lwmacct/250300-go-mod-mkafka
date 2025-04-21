@@ -107,19 +107,20 @@ func (c *Config) NewWriter() *kafka.Writer {
 }
 
 // 返回一个kafka.Reader
-func (c *Config) NewReader() *kafka.Reader {
-	c.defaluts()
-	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:     c.Brokers,
-		Topic:       c.Topic,
-		GroupID:     c.GroupID,
+func (t *Config) NewReader() *kafka.Reader {
+	t.defaluts()
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers:     t.Brokers,
+		Topic:       t.Topic,
+		GroupID:     t.GroupID,
 		MinBytes:    1,
 		MaxBytes:    10e6,
 		Dialer:      &kafka.Dialer{Timeout: 10 * time.Second},
 		MaxWait:     10 * time.Second,
-		Logger:      kafka.LoggerFunc(c.LogStdFunc),
-		ErrorLogger: kafka.LoggerFunc(c.LogErrFunc),
+		Logger:      kafka.LoggerFunc(t.LogStdFunc),
+		ErrorLogger: kafka.LoggerFunc(t.LogErrFunc),
 	})
+	return r
 }
 
 // 返回一个kafka.Transport
