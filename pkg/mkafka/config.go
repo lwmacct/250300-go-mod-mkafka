@@ -60,7 +60,8 @@ func (c *Config) init() {
 	})
 }
 
-func (c *Config) Writer() *kafka.Writer {
+// 返回一个kafka.Writer
+func (c *Config) NewWriter() *kafka.Writer {
 	c.init()
 	return &kafka.Writer{
 		Balancer:     &kafka.LeastBytes{},
@@ -80,7 +81,7 @@ func (c *Config) Writer() *kafka.Writer {
 }
 
 // 返回一个kafka.Reader
-func (c *Config) Reader() *kafka.Reader {
+func (c *Config) NewReader() *kafka.Reader {
 	c.init()
 	return kafka.NewReader(kafka.ReaderConfig{
 		Brokers:     c.Brokers,
@@ -95,6 +96,7 @@ func (c *Config) Reader() *kafka.Reader {
 	})
 }
 
+// 返回一个kafka.Transport
 func (c *Config) Transport() *kafka.Transport {
 	mechanism, _ := scram.Mechanism(
 		scram.SHA256,
