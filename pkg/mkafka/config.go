@@ -36,12 +36,13 @@ func (c *Config) WriterAsync() *kafka.Writer {
 		Addr:         kafka.TCP(c.Brokers...),
 		Transport:    c.Transport(),
 		Balancer:     &kafka.LeastBytes{},
-		BatchSize:    1000,
-		BatchTimeout: 10 * time.Second,
 		RequiredAcks: kafka.RequireOne,
 		Async:        true,
 		Completion:   c.Callback,
 
+		// 以下是默认值
+		BatchSize:              100,
+		BatchTimeout:           1 * time.Second,
 		AllowAutoTopicCreation: false,
 	}
 }
