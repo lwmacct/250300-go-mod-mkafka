@@ -84,6 +84,18 @@ func (c *Config) defaluts() {
 	if !c.disableAsync {
 		c.isAsync = true
 	}
+
+	if c.LogStdFunc == nil {
+		c.LogStdFunc = kafka.LoggerFunc(func(msg string, args ...interface{}) {
+			// 什么都不做
+		})
+	}
+
+	if c.LogErrFunc == nil {
+		c.LogErrFunc = kafka.LoggerFunc(func(msg string, args ...interface{}) {
+			// 什么都不做
+		})
+	}
 }
 
 // 返回一个kafka.Writer
