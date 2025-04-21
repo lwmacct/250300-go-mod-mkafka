@@ -1,6 +1,7 @@
 package mkafka
 
 import (
+	"sync"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -8,13 +9,47 @@ import (
 )
 
 type Config struct {
-	err      error
-	Brokers  []string `json:"brokers"`
-	Topic    string   `json:"topic"`
-	GroupID  string   `json:"group_id"`
-	Username string   `json:"username"`
-	Password string   `json:"password"`
-	Callback func(messages []kafka.Message, err error)
+	err  error
+	once sync.Once
+
+	Brokers    []string `json:"brokers"`
+	Topic      string   `json:"topic"`
+	GroupID    string   `json:"group_id"`
+	Username   string   `json:"username"`
+	Password   string   `json:"password"`
+	Completion func(messages []kafka.Message, err error)
+
+	BatchSize              int           `json:"batch_size"`
+	BatchTimeout           time.Duration `json:"batch_timeout"`
+	AllowAutoTopicCreation bool          `json:"allow_auto_topic_creation"`
+}
+
+func (c *Config) init() {
+	c.once.Do(func() {
+		if c.BatchSize == 0 {
+			c.BatchSize = 100
+		}
+		if c.BatchTimeout == 0 {
+			c.BatchTimeout = 1 * time.Second
+		}
+	})
+}
+
+func (c *Config) WriterAsync() *kafka.Writer {
+	c.init()
+	return &kafka.Writer{
+		Balancer:     &kafka.LeastBytes{},
+		RequiredAcks: kafka.RequireOne,
+		Addr:         kafka.TCP(c.Brokers...),
+		Async:        true,
+
+		Transport:              c.Transport(),
+		Topic:                  c.Topic,
+		Completion:             c.Completion,
+		BatchSize:              c.BatchSize,
+		BatchTimeout:           c.BatchTimeout,
+		AllowAutoTopicCreation: c.AllowAutoTopicCreation,
+	}
 }
 
 func (c *Config) Transport() *kafka.Transport {
@@ -28,21 +63,4 @@ func (c *Config) Transport() *kafka.Transport {
 
 func (c *Config) Err() error {
 	return c.err
-}
-
-func (c *Config) WriterAsync() *kafka.Writer {
-	return &kafka.Writer{
-		Topic:        c.Topic,
-		Addr:         kafka.TCP(c.Brokers...),
-		Transport:    c.Transport(),
-		Balancer:     &kafka.LeastBytes{},
-		RequiredAcks: kafka.RequireOne,
-		Async:        true,
-		Completion:   c.Callback,
-
-		// 以下是默认值
-		BatchSize:              100,
-		BatchTimeout:           1 * time.Second,
-		AllowAutoTopicCreation: false,
-	}
 }
