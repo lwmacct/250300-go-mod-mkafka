@@ -36,14 +36,28 @@ type Config struct {
 	LogErrFunc func(msg string, args ...interface{})
 }
 
+// 设置主题
 func (t *Config) SetTopic(topic string) *Config {
 	t.Topic = topic
 	return t
 }
 
+// 设置消费者组ID
 func (t *Config) SetGroupID(groupID string) *Config {
 	t.GroupID = groupID
 	return t
+}
+
+// 设置批量写入大小, 超过该大小会自动写入, 默认 100
+func (c *Config) SetBatchSize(batchSize int) *Config {
+	c.BatchSize = batchSize
+	return c
+}
+
+// 设置批量写入超时时间, 超过该时间会自动写入, 默认 1 秒
+func (c *Config) SetBatchTimeout(batchTimeout time.Duration) *Config {
+	c.BatchTimeout = batchTimeout
+	return c
 }
 
 func (c *Config) DisableAsync() *Config {
