@@ -102,19 +102,21 @@ func (c *Config) defaluts() {
 func (c *Config) NewWriter() *kafka.Writer {
 	c.defaluts()
 	return &kafka.Writer{
-		Balancer:     &kafka.LeastBytes{},
-		RequiredAcks: kafka.RequireOne,
-		Addr:         kafka.TCP(c.Brokers...),
+		// 通用参数
+		Topic:       c.Topic,
+		Logger:      kafka.LoggerFunc(c.LogStdFunc),
+		ErrorLogger: kafka.LoggerFunc(c.LogErrFunc),
+
+		Balancer:  &kafka.LeastBytes{},
+		Addr:      kafka.TCP(c.Brokers...),
+		Transport: c.Transport(),
 
 		Async:                  c.isAsync,
-		Logger:                 kafka.LoggerFunc(c.LogStdFunc),
-		ErrorLogger:            kafka.LoggerFunc(c.LogErrFunc),
-		Transport:              c.Transport(),
-		Topic:                  c.Topic,
 		Completion:             c.Completion,
 		BatchSize:              c.BatchSize,
 		BatchTimeout:           c.BatchTimeout,
 		AllowAutoTopicCreation: c.AllowAutoTopicCreation,
+		RequiredAcks:           kafka.RequireOne,
 	}
 }
 
@@ -122,15 +124,17 @@ func (c *Config) NewWriter() *kafka.Writer {
 func (t *Config) NewReader() *kafka.Reader {
 	t.defaluts()
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:     t.Brokers,
+		// 通用参数
 		Topic:       t.Topic,
-		GroupID:     t.GroupID,
-		MinBytes:    1,
-		MaxBytes:    10e6,
-		Dialer:      &kafka.Dialer{Timeout: 10 * time.Second},
-		MaxWait:     10 * time.Second,
 		Logger:      kafka.LoggerFunc(t.LogStdFunc),
 		ErrorLogger: kafka.LoggerFunc(t.LogErrFunc),
+
+		Brokers:  t.Brokers,
+		GroupID:  t.GroupID,
+		MinBytes: 1,
+		MaxBytes: 10e6,
+		MaxWait:  10 * time.Second,
+		Dialer:   &kafka.Dialer{Timeout: 10 * time.Second},
 	})
 	return r
 }
